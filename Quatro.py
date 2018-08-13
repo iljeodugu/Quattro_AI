@@ -56,10 +56,40 @@ def initGame():
     pygame.display.set_caption('Quatro')  # 게임화면의 제목 지정
     clock = pygame.time.Clock()  # 초당 프레임수를 설정할 수 있는 Clock객체 생성
 
+def CheckWin():
+    global quattro_map
+
+    for n in range(4):
+        for i in range(3):
+            for j in range(i+1, 4):
+                for k in range(1, 5):
+                    if (bin(quattro_map[n][i])[-k] == 'b' or bin(quattro_map[n][j])[-k] == 'b'):
+                        break
+                    if (bin(quattro_map[n][i])[-k] == bin(quattro_map[n][j])[-k]):
+                        return True
+                for k in range(1, 5):
+                    if (bin(quattro_map[i][n])[-k] == 'b' or bin(quattro_map[j][n])[-k] == 'b'):
+                        break
+                    if (bin(quattro_map[i][n])[-k] == bin(quattro_map[j][n])[-k]):
+                        return True
+    for i in range(3):
+        for j in range(i+1, 4):
+            for k in range(1, 5):
+                if (bin(quattro_map[i][i])[-k] == 'b' or bin(quattro_map[j][j])[-k] == 'b'):
+                    break
+                if (bin(quattro_map[i][i])[-k] == bin(quattro_map[j][j])[-k]):
+                    return True
+            for k in range(1, 5):
+                if (bin(quattro_map[i][3-i])[-k] == 'b' or bin(quattro_map[j][3-j])[-k] == 'b'):
+                    break
+                if (bin(quattro_map[i][3-i])[-k] == bin(quattro_map[j][3-j])[-k]):
+                    return True
+    return False
 
 def runGame():
-    global click, player, player_text, pick_map, background_img, picked_mal, previous_select
+    global click, player, player_text, pick_map, background_img, picked_mal, previous_select, quattro_map
 
+    CheckWin()
     ongame = False
     while not ongame:
         for event in pygame.event.get():
@@ -72,11 +102,13 @@ def runGame():
                         player = 4
                         click = -1
                         previous_select = -1
+
                     elif (player == 1 and click != -1): # 플레이어가 패를 놓음
                         player_text = "Player Choice time"
                         player = 2
                         click = -1
                         previous_select = -1
+                        print("end")
 
                     elif (player == 4 and click != -1 and pick_map[int(click/4)][click%4] != -1): # 컴퓨터가 상대방 패를 골라줌
                         picked_mal = click
