@@ -19,7 +19,7 @@ click = -1
 picked_mal = 0
 previous_select = -1
 player = 0
-player_text = "Game Start"
+player_text = ""
 
 for i in range(1, 17):
     file_name = "img/" + str(i) + ".PNG"
@@ -27,10 +27,14 @@ for i in range(1, 17):
     file_name = "select_img/" + str(i) + ".png"
     select_img_list.append(pygame.image.load(file_name))
 
-for i in range(4):
-    for j in range(4):
-        pick_map[i][j] = i*4 + j
-        quattro_map[i][j] = -1
+def initData():
+    global pick_map, quattro_map, player
+
+    player = 0
+    for i in range(4):
+        for j in range(4):
+            pick_map[i][j] = i * 4 + j
+            quattro_map[i][j] = -1
 
 def drawObject(obj, x, y):
     global background
@@ -49,47 +53,52 @@ def dispMessage(text):
 
 # 게임 초기화 함수
 def initGame():
-    global background, clock  # 게임이 진행될 게임 화면, 게임의 초당 프레임(FPS), 비행기 변수 선언, 적 선언
+    global background, clock, pick_map, quattro_map  # 게임이 진행될 게임 화면, 게임의 초당 프레임(FPS), 비행기 변수 선언, 적 선언
 
     pygame.init()
     background = pygame.display.set_mode((quattro_width, quattro_height))  # 게임화면의 가로세로크기를 설정
     pygame.display.set_caption('Quatro')  # 게임화면의 제목 지정
     clock = pygame.time.Clock()  # 초당 프레임수를 설정할 수 있는 Clock객체 생성
 
+def my_bin(num):
+    temp = bin(int(num))[2:]
+    if(len(temp) == 4):
+        pass
+    elif(len(temp) == 3):
+        temp = "0" + temp
+    elif(len(temp) == 2):
+        temp = "00" + temp
+    elif(len(temp) == 1):
+        temp = "000" + temp
+    return temp
+
+def bin_check(num1, num2, num3, num4):#같지 않으면 False 반환 하나라도 같으면 True
+    if(num1 < 0 or num2 < 0 or num3 < 0 or num4 < 0):
+        return False
+    for k in range(1, 5):
+        if(my_bin(int(num1))[-k] == my_bin(int(num2))[-k] == my_bin(int(num3))[-k] == my_bin(int(num3))[-k]):
+            return True
+    return False
+
 def CheckWin():
     global quattro_map
 
-    for n in range(4):
-        for i in range(3):
-            for j in range(i+1, 4):
-                for k in range(1, 5):
-                    if (bin(quattro_map[n][i])[-k] == 'b' or bin(quattro_map[n][j])[-k] == 'b'):
-                        break
-                    if (bin(quattro_map[n][i])[-k] == bin(quattro_map[n][j])[-k]):
-                        return True
-                for k in range(1, 5):
-                    if (bin(quattro_map[i][n])[-k] == 'b' or bin(quattro_map[j][n])[-k] == 'b'):
-                        break
-                    if (bin(quattro_map[i][n])[-k] == bin(quattro_map[j][n])[-k]):
-                        return True
-    for i in range(3):
-        for j in range(i+1, 4):
-            for k in range(1, 5):
-                if (bin(quattro_map[i][i])[-k] == 'b' or bin(quattro_map[j][j])[-k] == 'b'):
-                    break
-                if (bin(quattro_map[i][i])[-k] == bin(quattro_map[j][j])[-k]):
-                    return True
-            for k in range(1, 5):
-                if (bin(quattro_map[i][3-i])[-k] == 'b' or bin(quattro_map[j][3-j])[-k] == 'b'):
-                    break
-                if (bin(quattro_map[i][3-i])[-k] == bin(quattro_map[j][3-j])[-k]):
-                    return True
+    for i in range(4):
+        if(bin_check(quattro_map[i][0], quattro_map[i][1], quattro_map[i][2], quattro_map[i][3])):
+            return True
+        if (bin_check(quattro_map[0][i], quattro_map[1][i], quattro_map[2][i], quattro_map[3][i])):
+            return True
+    if(bin_check(quattro_map[0][0], quattro_map[1][1], quattro_map[2][2], quattro_map[3][3])):
+        return True
+    if (bin_check(quattro_map[3][0], quattro_map[2][1], quattro_map[1][2], quattro_map[0][3])):
+        return True
     return False
 
 def runGame():
     global click, player, player_text, pick_map, background_img, picked_mal, previous_select, quattro_map
 
-    CheckWin()
+    initData()
+    player_text = "GameStart"
     ongame = False
     while not ongame:
         for event in pygame.event.get():
@@ -98,17 +107,24 @@ def runGame():
             elif(event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]):
                 if( pygame.mouse.get_pos()[0] > 1160 and pygame.mouse.get_pos()[1] < 80):
                     if (player == 3 and click != -1): # Computer 가 패를 놓음
-                        player_text = "Computer Choice time"
-                        player = 4
-                        click = -1
-                        previous_select = -1
+                        if (CheckWin()):
+                            dispMessage("Computer Win")
+
+                        else:
+                            player_text = "Computer Choice time"
+                            player = 4
+                            click = -1
+                            previous_select = -1
 
                     elif (player == 1 and click != -1): # 플레이어가 패를 놓음
-                        player_text = "Player Choice time"
-                        player = 2
-                        click = -1
-                        previous_select = -1
-                        print("end")
+                        if(CheckWin()):
+                            dispMessage("Player Win")
+
+                        else:
+                            player_text = "Player Choice time"
+                            player = 2
+                            click = -1
+                            previous_select = -1
 
                     elif (player == 4 and click != -1 and pick_map[int(click/4)][click%4] != -1): # 컴퓨터가 상대방 패를 골라줌
                         picked_mal = click
@@ -195,4 +211,5 @@ def runGame():
 
 
 initGame()
+initData()
 runGame()
